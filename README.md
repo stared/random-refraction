@@ -1,6 +1,6 @@
 # Random Refraction Raytracing
 
-**[http://stared.github.io/random-refraction/](See it live here)**
+**[See it live here](http://stared.github.io/random-refraction/)**
 
 (In progress. Based on idea by Javier Rodriguez-Laguna.)
 
