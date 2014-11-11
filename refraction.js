@@ -11,7 +11,7 @@ RAY_NO = 200;
 
 MAX_ITER = 1000;
 
-FLUCT = 0.1;
+FLUCT = 0.3;
 
 LOG = false;
 
@@ -56,24 +56,24 @@ raytrace = function(x, y, vx, vy, maxIter) {
         console.log("vx: " + vx + ", vy: " + vy);
       }
       if (i !== iPrev) {
-        if (Math.abs(vy) > refrRatio) {
+        if (Math.abs(vy) > Math.abs(refrRatio)) {
           vx = -vx;
           i = iPrev;
           if (LOG) {
             console.log("Internal!");
           }
         } else {
-          vy = vy * Math.sqrt((1 - vy * vy) / (refrRatio * refrRatio - vy * vy));
+          vy = vy * Math.sign(refrRatio) * Math.sqrt((1 - vy * vy) / (refrRatio * refrRatio - vy * vy));
         }
       } else if (j !== jPrev) {
-        if (Math.abs(vx) > refrRatio) {
+        if (Math.abs(vx) > Math.abs(refrRatio)) {
           vy = -vy;
           j = jPrev;
           if (LOG) {
             console.log("Internal!");
           }
         } else {
-          vx = vx * Math.sqrt((1 - vx * vx) / (refrRatio * refrRatio - vx * vx));
+          vx = vx * Math.sign(refrRatio) * Math.sqrt((1 - vx * vx) / (refrRatio * refrRatio - vx * vx));
         }
       }
       _ref1 = [vx / Math.sqrt(vx * vx + vy * vy), vy / Math.sqrt(vx * vx + vy * vy)], vx = _ref1[0], vy = _ref1[1];
@@ -124,7 +124,7 @@ svg = d3.select('body').append('svg').attr('width', N_X * SIZE).attr('height', N
 
 for (i = _i = 0; 0 <= N_X ? _i < N_X : _i > N_X; i = 0 <= N_X ? ++_i : --_i) {
   for (j = _j = 0; 0 <= N_Y ? _j < N_Y : _j > N_Y; j = 0 <= N_Y ? ++_j : --_j) {
-    svg.append('rect').attr('class', 'tile').attr('x', i * SIZE).attr('y', (N_Y - j - 1) * SIZE).attr('width', SIZE).attr('height', SIZE).style('fill', 'steelblue').style('opacity', refraction[i][j] / 2);
+    svg.append('rect').attr('class', 'tile').attr('x', i * SIZE).attr('y', (N_Y - j - 1) * SIZE).attr('width', SIZE).attr('height', SIZE).style('fill', refraction[i][j] > 0 ? 'steelblue' : 'green').style('opacity', Math.abs(refraction[i][j] / 2));
   }
 }
 

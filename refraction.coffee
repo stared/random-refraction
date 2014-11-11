@@ -7,7 +7,7 @@ N_X = 61
 N_Y = 61
 RAY_NO = 200
 MAX_ITER = 1000
-FLUCT = 0.1
+FLUCT = 0.3
 LOG = false
 
 
@@ -46,19 +46,19 @@ raytrace = (x, y, vx, vy, maxIter) ->
           console.log("vx: #{vx}, vy: #{vy}")
         
         if i != iPrev
-          if Math.abs(vy) > refrRatio
+          if Math.abs(vy) > Math.abs(refrRatio)
             vx = -vx
             i = iPrev
             if LOG then console.log("Internal!")
           else
-            vy = vy * Math.sqrt( (1 - vy*vy) / (refrRatio*refrRatio - vy*vy))
+            vy = vy * Math.sign(refrRatio) * Math.sqrt( (1 - vy*vy) / (refrRatio*refrRatio - vy*vy))
         else if j != jPrev
-          if Math.abs(vx) > refrRatio
+          if Math.abs(vx) > Math.abs(refrRatio)
             vy = -vy
             j = jPrev
             if LOG then console.log("Internal!")
           else
-            vx = vx * Math.sqrt( (1 - vx*vx) / (refrRatio*refrRatio - vx*vx))
+            vx = vx * Math.sign(refrRatio) * Math.sqrt( (1 - vx*vx) / (refrRatio*refrRatio - vx*vx))
         
         [vx, vy] = [vx/Math.sqrt(vx*vx + vy*vy), vy/Math.sqrt(vx*vx + vy*vy)]
 
@@ -139,8 +139,8 @@ for i in [0...N_X]
           .attr('y', (N_Y - j - 1) * SIZE)
           .attr('width', SIZE)
           .attr('height', SIZE)
-          .style('fill', 'steelblue')
-          .style('opacity', refraction[i][j]/2)
+          .style('fill', if refraction[i][j] > 0 then 'steelblue' else 'green')
+          .style('opacity', Math.abs(refraction[i][j]/2))
 
 
 lineFunction = d3.svg.line()
