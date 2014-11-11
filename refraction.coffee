@@ -8,7 +8,6 @@ N_Y = 61
 RAY_NO = 200
 MAX_ITER = 1000
 FLUCT = 0.3
-LOG = false
 
 
 refraction = for i in [0...N_X]
@@ -31,36 +30,30 @@ raytrace = (x, y, vx, vy, maxIter) ->
   # or maybe alpha and vx, vy only post factum
   
   for k in [0...maxIter]
-    
-    if LOG then console.log("i: #{i}, j: #{j}")
 
-    if k != 0
+    # no refreaction in the first step
+    if k != 0  
    
-        if not ((0 <= i < N_X) and (0 <= j < N_Y))
-            break
-         
-        refrRatio = refraction[i][j]/refraction[iPrev][jPrev]
-        
-        if LOG
-          console.log("Refr ratio: #{refrRatio}")
-          console.log("vx: #{vx}, vy: #{vy}")
-        
-        if i != iPrev
-          if Math.abs(vy) > Math.abs(refrRatio)
-            vx = -vx
-            i = iPrev
-            if LOG then console.log("Internal!")
-          else
-            vy = vy * Math.sign(refrRatio) * Math.sqrt( (1 - vy*vy) / (refrRatio*refrRatio - vy*vy))
-        else if j != jPrev
-          if Math.abs(vx) > Math.abs(refrRatio)
-            vy = -vy
-            j = jPrev
-            if LOG then console.log("Internal!")
-          else
-            vx = vx * Math.sign(refrRatio) * Math.sqrt( (1 - vx*vx) / (refrRatio*refrRatio - vx*vx))
-        
-        [vx, vy] = [vx/Math.sqrt(vx*vx + vy*vy), vy/Math.sqrt(vx*vx + vy*vy)]
+      # is it on board?
+      if not ((0 <= i < N_X) and (0 <= j < N_Y))
+        break
+      
+      refrRatio = refraction[i][j]/refraction[iPrev][jPrev]
+      
+      if i != iPrev        # vertical layer
+        if Math.abs(vy) > Math.abs(refrRatio)  # total internal reflection
+          vx = -vx
+          i = iPrev
+        else
+          vy = vy * Math.sign(refrRatio) * Math.sqrt( (1 - vy*vy) / (refrRatio*refrRatio - vy*vy))
+      else  # j != jPrev   # horizontal layer 
+        if Math.abs(vx) > Math.abs(refrRatio)  # total internal reflection
+          vy = -vy
+          j = jPrev
+        else
+          vx = vx * Math.sign(refrRatio) * Math.sqrt( (1 - vx*vx) / (refrRatio*refrRatio - vx*vx))
+      
+      [vx, vy] = [vx/Math.sqrt(vx*vx + vy*vy), vy/Math.sqrt(vx*vx + vy*vy)]
 
     iPrev = i
     jPrev = j
@@ -119,7 +112,8 @@ raytrace = (x, y, vx, vy, maxIter) ->
 # calculating
 #
 
-rays = (raytrace(N_X/2, N_Y/2, Math.cos(alpha), Math.sin(alpha), MAX_ITER) for alpha in [0...(2*Math.PI)] by (2*Math.PI)/RAY_NO)
+rays = for alpha in [0...2*Math.PI] by 2*Math.PI/RAY_NO
+         raytrace(N_X/2, N_Y/2, Math.cos(alpha), Math.sin(alpha), MAX_ITER)
 
 
 #
