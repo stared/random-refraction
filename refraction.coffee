@@ -1,3 +1,7 @@
+#
+# initialization
+#
+
 SIZE = 10
 N_X = 61
 N_Y = 61
@@ -6,46 +10,16 @@ MAX_ITER = 1000
 FLUCT = 0.1
 LOG = false
 
-svg = d3.select('body').append('svg')
-  .attr('width', N_X * SIZE)
-  .attr('height', N_Y * SIZE)   
 
 refraction = for i in [0...N_X]
                for j in [0...N_Y]
                  1 + FLUCT * (1 - 2*Math.random())
 
-for i in [0...N_X]
-    for j in [0...N_Y]
-        svg.append('rect')
-          .attr('x', i * SIZE)
-          .attr('y', (N_Y - j - 1) * SIZE)
-          .attr('width', SIZE)
-          .attr('height', SIZE)
-          .style('fill', 'steelblue')
-        #  .style('stroke-width', 0.5)
-        #  .style('stroke', 'black')
-          .style('opacity', refraction[i][j]/2)
 
-            
-# illumination = (rays) -> 
-#   res = for i in [1..n_X]
-#           for j in [1..N_Y]
-#             0
-#   for ray in rays
-#     [pos0, poss...] = ray
-#     xPrev = pos0.x
-#     yPrev = pos0.y
-#     for pos in poss
-#       x = pos.x
-#       y = pos.y
-#       dist = Math.sqrt((x-xPrev)**2 + (y-yPrev)**2)
-#       i = Math.floor((x + xPrev)/2)
-#       j = Math.floor((y + yPrev)/2)
-#       res[i][j] += dist
-#       xPrev = x
-#       yPrev = y
-#   res        
-
+#
+# functions
+#
+  
 raytrace = (x, y, vx, vy, maxIter) ->
 
   [vx, vy] = [vx/Math.sqrt(vx*vx + vy*vy), vy/Math.sqrt(vx*vx + vy*vy)]
@@ -135,13 +109,60 @@ raytrace = (x, y, vx, vy, maxIter) ->
       continue
   res
 
+
+# illumination = (rays) -> 
+#   res = for i in [1..n_X]
+#           for j in [1..N_Y]
+#             0
+#   for ray in rays
+#     [pos0, poss...] = ray
+#     xPrev = pos0.x
+#     yPrev = pos0.y
+#     for pos in poss
+#       x = pos.x
+#       y = pos.y
+#       dist = Math.sqrt((x-xPrev)**2 + (y-yPrev)**2)
+#       i = Math.floor((x + xPrev)/2)
+#       j = Math.floor((y + yPrev)/2)
+#       res[i][j] += dist
+#       xPrev = x
+#       yPrev = y
+#   res
+
+
+#
+# calculating
+#
+
+rays = (raytrace(N_X/2, N_Y/2, Math.cos(alpha), Math.sin(alpha), MAX_ITER)
+         for alpha in [0...(2*Math.PI)] by (2*Math.PI)/RAY_NO)
+
+
+#
+# drawing
+#
+
+svg = d3.select('body').append('svg')
+  .attr('width', N_X * SIZE)
+  .attr('height', N_Y * SIZE)   
+
+
+for i in [0...N_X]
+    for j in [0...N_Y]
+        svg.append('rect')
+          .attr('class', 'tile')
+          .attr('x', i * SIZE)
+          .attr('y', (N_Y - j - 1) * SIZE)
+          .attr('width', SIZE)
+          .attr('height', SIZE)
+          .style('fill', 'steelblue')
+          .style('opacity', refraction[i][j]/2)
+
+
 lineFunction = d3.svg.line()
   .x((d) -> SIZE * d.x)
   .y((d) -> SIZE * (N_Y - d.y))
-  .interpolate("linear");
-        
-
-rays = (raytrace(N_X/2, N_Y/2, Math.cos(alpha), Math.sin(alpha), MAX_ITER) for alpha in [0...(2*Math.PI)] by (2*Math.PI)/RAY_NO)
+  .interpolate("linear")
 
 
 svg.selectAll("path")
