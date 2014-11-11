@@ -15,8 +15,6 @@ FLUCT = 0.1;
 
 LOG = false;
 
-svg = d3.select('body').append('svg').attr('width', N_X * SIZE).attr('height', N_Y * SIZE);
-
 refraction = (function() {
   var _i, _results;
   _results = [];
@@ -33,24 +31,18 @@ refraction = (function() {
   return _results;
 })();
 
-for (i = _i = 0; 0 <= N_X ? _i < N_X : _i > N_X; i = 0 <= N_X ? ++_i : --_i) {
-  for (j = _j = 0; 0 <= N_Y ? _j < N_Y : _j > N_Y; j = 0 <= N_Y ? ++_j : --_j) {
-    svg.append('rect').attr('x', i * SIZE).attr('y', (N_Y - j - 1) * SIZE).attr('width', SIZE).attr('height', SIZE).style('fill', 'steelblue').style('opacity', refraction[i][j] / 2);
-  }
-}
-
 raytrace = function(x, y, vx, vy, maxIter) {
-  var iPrev, jPrev, k, refrRatio, res, _k, _ref, _ref1;
+  var dx, dy, iPrev, jPrev, k, ray, refrRatio, vxa, vya, _i, _ref, _ref1;
   _ref = [vx / Math.sqrt(vx * vx + vy * vy), vy / Math.sqrt(vx * vx + vy * vy)], vx = _ref[0], vy = _ref[1];
   i = Math.floor(x);
   j = Math.floor(y);
-  res = [
+  ray = [
     {
       x: x,
       y: y
     }
   ];
-  for (k = _k = 0; 0 <= maxIter ? _k < maxIter : _k > maxIter; k = 0 <= maxIter ? ++_k : --_k) {
+  for (k = _i = 0; 0 <= maxIter ? _i < maxIter : _i > maxIter; k = 0 <= maxIter ? ++_i : --_i) {
     if (LOG) {
       console.log("i: " + i + ", j: " + j);
     }
@@ -88,85 +80,59 @@ raytrace = function(x, y, vx, vy, maxIter) {
     }
     iPrev = i;
     jPrev = j;
-    if (vx >= 0 && vy >= 0) {
-      if (vy * (i + 1 - x) < vx * (j + 1 - y)) {
-        y = y + vy * (i + 1 - x) / vx;
+    dx = vx >= 0 ? i + 1 - x : x - i;
+    dy = vy >= 0 ? j + 1 - y : y - j;
+    vxa = Math.abs(vx);
+    vya = Math.abs(vy);
+    if (vya * dx < vxa * dy) {
+      y += vy * dx / vxa;
+      if (vx > 0) {
         x = i + 1;
         i += 1;
       } else {
-        x = x + vx * (j + 1 - y) / vy;
+        x = i;
+        i += -1;
+      }
+    } else {
+      x += vx * dy / vya;
+      if (vy > 0) {
         y = j + 1;
         j += 1;
-      }
-      res.push({
-        x: x,
-        y: y
-      });
-      continue;
-    } else if (vx >= 0 && vy < 0) {
-      if (-vy * (i + 1 - x) < vx * (y - j)) {
-        y = y + vy * (i + 1 - x) / vx;
-        x = i + 1;
-        i += 1;
       } else {
-        x = x - vx * (y - j) / vy;
         y = j;
         j += -1;
       }
-      res.push({
-        x: x,
-        y: y
-      });
-      continue;
-    } else if (vx < 0 && vy >= 0) {
-      if (vy * (x - i) < -vx * (j + 1 - y)) {
-        y = y - vy * (x - i) / vx;
-        x = i;
-        i += -1;
-      } else {
-        x = x + vx * (j + 1 - y) / vy;
-        y = j + 1;
-        j += 1;
-      }
-      res.push({
-        x: x,
-        y: y
-      });
-      continue;
-    } else if (vx < 0 && vy < 0) {
-      if (-vy * (x - i) < -vx * (y - j)) {
-        y = y - vy * (x - i) / vx;
-        x = i;
-        i += -1;
-      } else {
-        x = x - vx * (y - j) / vy;
-        y = j;
-        j += -1;
-      }
-      res.push({
-        x: x,
-        y: y
-      });
-      continue;
     }
+    ray.push({
+      x: x,
+      y: y
+    });
   }
-  return res;
+  return ray;
 };
+
+rays = (function() {
+  var _i, _ref, _ref1, _results;
+  _results = [];
+  for (alpha = _i = 0, _ref = 2 * Math.PI, _ref1 = (2 * Math.PI) / RAY_NO; _ref1 > 0 ? _i < _ref : _i > _ref; alpha = _i += _ref1) {
+    _results.push(raytrace(N_X / 2, N_Y / 2, Math.cos(alpha), Math.sin(alpha), MAX_ITER));
+  }
+  return _results;
+})();
+
+svg = d3.select('body').append('svg').attr('width', N_X * SIZE).attr('height', N_Y * SIZE);
+
+for (i = _i = 0; 0 <= N_X ? _i < N_X : _i > N_X; i = 0 <= N_X ? ++_i : --_i) {
+  for (j = _j = 0; 0 <= N_Y ? _j < N_Y : _j > N_Y; j = 0 <= N_Y ? ++_j : --_j) {
+    svg.append('rect').attr('class', 'tile').attr('x', i * SIZE).attr('y', (N_Y - j - 1) * SIZE).attr('width', SIZE).attr('height', SIZE).style('fill', 'steelblue').style('opacity', refraction[i][j] / 2);
+  }
+}
 
 lineFunction = d3.svg.line().x(function(d) {
   return SIZE * d.x;
 }).y(function(d) {
   return SIZE * (N_Y - d.y);
 }).interpolate("linear");
-
-rays = (function() {
-  var _k, _ref, _ref1, _results;
-  _results = [];
-  for (alpha = _k = 0, _ref = 2 * Math.PI, _ref1 = (2 * Math.PI) / RAY_NO; _ref1 > 0 ? _k < _ref : _k > _ref; alpha = _k += _ref1) {
-    _results.push(raytrace(N_X / 2, N_Y / 2, Math.cos(alpha), Math.sin(alpha), MAX_ITER));
-  }
-  return _results;
-})();
 
 svg.selectAll("path").data(rays).enter().append("path").attr('class', 'ray').attr('d', function(d) {
   return lineFunction(d);

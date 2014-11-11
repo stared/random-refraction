@@ -26,7 +26,9 @@ raytrace = (x, y, vx, vy, maxIter) ->
 
   i = Math.floor(x)
   j = Math.floor(y)
-  res = [{x: x, y: y}]
+  ray = [{x: x, y: y}]
+
+  # or maybe alpha and vx, vy only post factum
   
   for k in [0...maxIter]
     
@@ -62,54 +64,37 @@ raytrace = (x, y, vx, vy, maxIter) ->
 
     iPrev = i
     jPrev = j
-        
-    if vx >= 0 and vy >= 0
-      if vy*(i + 1 - x) < vx*(j + 1 - y)
-         y = y + vy*(i + 1 - x)/vx
-         x = i + 1
-         i += 1
+
+    # closest horizontal and vertical lines 
+    dx = if vx >= 0 then (i + 1 - x) else (x - i)
+    dy = if vy >= 0 then (j + 1 - y) else (y - j)
+
+    vxa = Math.abs(vx)
+    vya = Math.abs(vy)
+
+    if vya * dx < vxa * dy  # hitting left or right
+      y += vy * dx / vxa
+      if vx > 0
+        x = i + 1
+        i += 1
       else
-         x = x + vx*(j + 1 - y)/vy
-         y = j + 1
-         j += 1
-      res.push({x: x, y: y})
-      continue
-    else if vx >= 0 and vy < 0
-      if -vy*(i+1-x) < vx*(y-j)
-         y = y + vy*(i+1-x)/vx
-         x = i + 1
-         i += 1
+        x = i
+        i += -1
+    else                    # hitting top or bottom
+      x += vx * dy / vya
+      if vy > 0
+        y = j + 1
+        j += 1
       else
-         x = x - vx*(y-j)/vy
-         y = j
-         j += -1
-      res.push({x: x, y: y})
-      continue
-    else if vx < 0 and vy >= 0
-      if vy*(x-i) < -vx*(j+1-y)
-         y = y - vy*(x-i)/vx
-         x = i
-         i += -1
-      else
-         x = x + vx*(j+1-y)/vy
-         y = j + 1
-         j += 1
-      res.push({x: x, y: y})
-      continue
-    else if vx < 0 and vy < 0
-      if -vy*(x-i) < -vx*(y-j)
-         y = y - vy*(x-i)/vx
-         x = i
-         i += -1
-      else
-         x = x - vx*(y-j)/vy
-         y = j
-         j += -1
-      res.push({x: x, y: y})
-      continue
-  res
+        y = j
+        j += -1
+
+    ray.push({x: x, y: y})
+       
+  ray
 
 
+# or also multy by n?
 # illumination = (rays) -> 
 #   res = for i in [1..n_X]
 #           for j in [1..N_Y]
@@ -134,8 +119,7 @@ raytrace = (x, y, vx, vy, maxIter) ->
 # calculating
 #
 
-rays = (raytrace(N_X/2, N_Y/2, Math.cos(alpha), Math.sin(alpha), MAX_ITER)
-         for alpha in [0...(2*Math.PI)] by (2*Math.PI)/RAY_NO)
+rays = (raytrace(N_X/2, N_Y/2, Math.cos(alpha), Math.sin(alpha), MAX_ITER) for alpha in [0...(2*Math.PI)] by (2*Math.PI)/RAY_NO)
 
 
 #
