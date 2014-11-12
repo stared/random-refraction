@@ -14,11 +14,26 @@ refraction = for i in [0...N_X]
                for j in [0...N_Y]
                  1 + FLUCT * (1 - 2*Math.random())
 
+## other refraction arrays
+# 
+# refraction = for i in [0...N_X]
+#                for j in [0...N_Y]
+#                  1 - 1.1 * (2*i/N_X - 1)*(2 * i/N_X - 1)
+#
+# refraction = for i in [0...N_X]
+#                for j in [0...N_Y]
+#                  if Math.abs(2*i/N_X - 1) < 0.5 then 1 else 0.3
+#
+# # not smooth enough
+# refraction = for i in [0...N_X]
+#                for j in [0...N_Y]
+#                  if ((2*i/N_X - 1)*(2*i/N_X - 1) + (2*j/N_Y - 1.5)*(2*j/N_Y - 1.5)) < 0.04 then 1.5 else 1
+
 
 #
 # functions
 #
-  
+
 raytrace = (x, y, vx, vy, maxIter) ->
 
   [vx, vy] = [vx/Math.sqrt(vx*vx + vy*vy), vy/Math.sqrt(vx*vx + vy*vy)]
